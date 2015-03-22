@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Banner Carousel
 // @namespace    http://terrasoft.gr/userscripts/
-// @version      0.2
+// @version      0.2.1
 // @description  Banner Carousel
 // @author       George Schizas
 // @match        https://www.reddit.com/r/greece/comments/2zg5ou/*
