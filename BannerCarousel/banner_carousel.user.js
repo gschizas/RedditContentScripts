@@ -5,7 +5,7 @@
 // @description  Banner Carousel
 // @author       George Schizas
 // @match        https://www.reddit.com/r/greece/comments/2zg5ou/*
-// @downloadUrl  https://raw.githubusercontent.com/gschizas/RedditContentScripts/master/BannerCarousel/banner_carousel.user.js
+// @downloadUrl  https://gschizas.github.io/reddit-userscripts/banner_carousel.user.js
 // @grant        unsafeWindow
 // ==/UserScript==
 
