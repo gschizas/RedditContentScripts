@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Banner Carousel
 // @namespace    http://terrasoft.gr/userscripts/
-// @version      0.2.2
+// @version      0.3.0
 // @description  Banner Carousel
 // @author       George Schizas
 // @match        https://www.reddit.com/r/greece/comments/2zg5ou/*
@@ -9,7 +9,10 @@
 // @grant        unsafeWindow
 // ==/UserScript==
 
-var bannerImages = [
+var $ = unsafeWindow.jQuery;
+
+var bannerImages = []
+/*
     'https://i.imgur.com/ptC8pyl.jpg',
     'https://i.imgur.com/Ece3hYj.jpg',
     'https://i.imgur.com/T22nJc6.png',
@@ -25,32 +28,25 @@ var bannerImages = [
     'https://i.imgur.com/V2kYfgv.jpg',
     'https://i.imgur.com/7gRJxLy.png',
     'https://i.imgur.com/eFlc02U.jpg'
-];
-
-var $ = unsafeWindow.jQuery;
+*/
 
 var bannerControl = $("<select id='bannerSelect'><option value='0'>--Default Banner--</option></select><button id='bannerPrev'>« Prev</button><button id='bannerNext'>Next »</button>");
 
 $('#siteTable').prepend(bannerControl);
 
-console.log(bannerControl);
-
-bannerImages.forEach(function (el, i) {
-    // console.log(el, i);
-    $('#bannerSelect').append("<option value='" + (i+1) + "'>" + el + "</option>");
-});
-
-// console.log(combo);
-// console.log($('.commentarea'));
 
 $('#bannerSelect').change(function() {
     selectedImage = parseInt($(this).val());
-    if (selectedImage==0) {
-        imageUrl = '//c.thumbs.redditmedia.com/-oIzLQ0UPDfe1Swn.png'
+    if (selectedImage===0) {
+        imageUrl = '//c.thumbs.redditmedia.com/-oIzLQ0UPDfe1Swn.png';
+        imageHeight = 117;
     } else {
-        imageUrl = bannerImages[selectedImage-1];
+        var imageData = bannerImages[selectedImage-1]
+        imageUrl = imageData.url;
+        imageHeight = imageData.height;
     }
     $('#header').css('background-image', 'url(' + imageUrl + ')')
+    $('#header-img').css('height', imageHeight + 'px')
 })
 
 $('#bannerPrev').click(function() {
@@ -68,4 +64,41 @@ $('#bannerNext').click(function() {
     if (currentBanner>bannerImages.length) currentBanner = 0;
     $('#bannerSelect').val(currentBanner);
     $('#bannerSelect').change();
+})
+
+var jsonUrl = window.location.toString() + '.json'
+var things;
+$.getJSON(jsonUrl, function(data) { 
+    things=data;
+    console.log(things);
+
+    things[1]['data']['children'].forEach(function(e,i,a) {
+        body = e['data']['body'];
+        var re = /\[([^\]]+)\]\(([^\)]+)\)/;
+        var re2 = /https?:\/\/(i\.)?imgur.com\/(\w+)(\.jpg|\.png|\/)/;
+        var match = re.exec(body);
+        if (match) {
+            var imgName = match[1];
+            var imgUrl = match[2];
+            // console.log(imgName);
+            // console.log(imgUrl);
+            var urlMatch = re2.exec(imgUrl);
+            if (urlMatch) {
+                // console.log(urlMatch);
+                var imgId = urlMatch[2];
+                $.ajax({
+                    beforeSend: function(request) {
+                        request.setRequestHeader('Authorization', 'Client-ID 2f0d90280e84f75');
+                    },
+                    dataType: "json",
+                    url: "https://api.imgur.com/3/image/" + imgId,
+                    success: function(imageData) {
+                        bannerImages.push({'url': imageData.data.link, 'height': imageData.data.height});
+                        var i = bannerImages.length;
+                        $('#bannerSelect').append("<option value='" + (i+1) + "'>" + imgId + "</option>");
+                    }
+                });
+            };
+        }
+    })
 })
